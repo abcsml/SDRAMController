@@ -1,7 +1,12 @@
-{ signal: [
-  { name: "clk",         wave: "p.....|..." },
-  { name: "Data",        wave: "x.345x|=.x", data: ["head", "body", "tail", "data"] },
-  { name: "Request",     wave: "0.1..0|1.0" },
-  {},
-  { name: "Acknowledge", wave: "1.....|01." }
-]}
+{signal: [
+  {name: 'rx', wave: '10========1', data: ['0','1','2','3','4','5','6','7'], phase: 0.6, period: 4},
+  {name: 'rx1', wave: '10========1', data: ['0','1','2','3','4','5','6','7'], phase: 0.4, period: 4},
+  {name: 'rx2', wave: '10========1', data: ['0','1','2','3','4','5','6','7'], phase: 0.2, period: 4},
+  {name: 'rx3', wave: '10========1', data: ['0','1','2','3','4','5','6','7'], period: 4},
+  {name: 'rx_flag', wave: '01........0', period: 4},
+  {name: 'baud_cnt', wave: '===========', data: ['0','5208','5208','5208','5208','5208','5208','5208','5208','5208'], period: 4},
+  {name: 'bit_flag', wave: '0..........10......10......10......10......10......10......10......10......10...........', period: 0.5},
+  {name: 'bit_cnt', wave: '=.=========',phase:2, period: 4,data:'0 1 2 3 4 5 6 7 8 0'},
+  {name: 'rx_data',wave:'=.=.......=',period:4,phase:2,data:["8'0b", "{rx2, rx_data[7:1]}", "rx_data"]},
+  {name: 'po_flag', wave: '0...........................................................................10....',period: 0.5},
+],"config": { "skin": "narrow" }}
