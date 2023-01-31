@@ -1,6 +1,8 @@
+`define SIM
+
 module uart_tx(
 	input				clk,
-	input				rst,
+	input				rstn,
 	output	reg			tx,
 	input				tx_trig,
 	input	[7:0]		tx_data
@@ -25,6 +27,60 @@ reg					bit_flag;
 reg	[3:0]			bit_cnt;
 
 
+always @(posedge clk or negedge rstn) begin
+	if (rstn == 1'b0)
+		tx_data_reg <= 'b0;
+	if (tx_trig == 1'b1)
+		tx_data_reg <= tx_data;
+	else if (bit_flag == 1'b1 && bit_cnt != 'b0)
+		tx_data_reg = tx_data_reg >> 1;
+end
 
+always @(posedge clk or negedge rstn) begin
+	if (rstn == 1'b0)
+		tx_flag <= 1'b0;
+	else if (bit_cnt == 'd8 && baud_cnt == BAUD_END)
+		tx_flag <= 1'b0;
+	else if (tx_trig == 1'b1 && bit_cnt == 1'b0)
+		tx_flag <= 1'b1;
+end
+
+always @(posedge clk or negedge rstn) begin
+	if (rstn == 1'b0)
+		baud_cnt <= 'b0;
+	else if (baud_cnt == BAUD_END)
+		baud_cnt <= 'b0;
+	else if (tx_flag == 1'b1)
+		baud_cnt <= baud_cnt + 1'b1;
+end
+
+always @(posedge clk or negedge rstn) begin
+	if (rstn == 1'b0)
+		bit_flag <= 1'b0;
+	else if (baud_cnt == BAUD_END)
+		bit_flag <= 1'b1;
+	else
+		bit_flag <= 1'b0;
+end
+
+always @(posedge clk or negedge rstn) begin
+	if (rstn == 1'b0)
+		bit_cnt <= 'b0;
+	else if (bit_flag == 1'b1 && bit_cnt == 'd8)
+		bit_cnt <= 'b0;
+	else if (bit_flag == 1'b1)
+		bit_cnt <= bit_cnt + 1'b1;
+end
+
+always @(posedge clk or negedge rstn) begin
+	if (rstn == 1'b0)
+		tx <= 1'b1;
+	else if (tx_flag == 1'b1 && bit_cnt == 1'b0)
+		tx <= 1'b0;
+	else if (tx_flag == 1'b1)
+		tx <= tx_data_reg[0];
+	else
+		tx <= 1'b1;
+end
 
 endmodule
