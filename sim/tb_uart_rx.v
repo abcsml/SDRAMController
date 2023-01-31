@@ -17,6 +17,8 @@ initial begin
 	tx		<=		1;
 	#100
 	rst		<=		1;
+	#100
+	tx_byte();
 end
 
 always	#5		clk		=		~clk;
@@ -26,7 +28,7 @@ initial $readmemh("./tx_data.txt", mem_a);
 task		tx_byte();
 	integer	i;
 	for(i = 0; i < 4; i = i + 1) begin
-		tx_bit(mem_a[i])
+		tx_bit(mem_a[i]);
 	end
 endtask
 
@@ -47,7 +49,7 @@ task		tx_bit(
 			8:		tx		<=		data[7];
 			9:		tx		<=		1'b1;
 		endcase
-		#560
+		#560;
 	end
 endtask
 

@@ -1,11 +1,12 @@
 `define SIM
 
-module uart_rx
+module uart_rx(
 	input					clk,
 	input					rst,
 	input					rx,
 	output	reg	[7:0]		rx_data,
 	output	reg				po_flag
+);
 
 // Parameter and Internal Signals
 localparam	FPGA_FREQ	=	50_000_000;
@@ -43,9 +44,9 @@ always @(posedge clk or negedge rst) begin	// 异步复位
 	if (rst == 1'b0)
 		rx_flag	<=	1'b0;
 	else if (rx_neg == 1'b1)
-		rx_flag	<=	1'b0;
-	else if (bit_cnt == 'd0 && baud_cnt == BAUD_END)
 		rx_flag	<=	1'b1;
+	else if (bit_cnt == 'd0 && baud_cnt == BAUD_END)
+		rx_flag	<=	1'b0;
 end
 
 always @(posedge clk) begin
@@ -63,10 +64,12 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-	if (bit_flag == 1'b1 && bit_cnt != BIT_END)
-		bit_cnt <= bit_cnt + 1'b1;
-	else
+	if (rx_flag == 1'b0)
 		bit_cnt <= 1'b0;
+	if (bit_flag == 1'b1 && bit_cnt == BIT_END)
+		bit_cnt <= 1'b0;
+	else if (bit_flag == 1'b1)
+		bit_cnt <= bit_cnt + 1'b1;
 end
 
 always @(posedge clk or negedge rst) begin
