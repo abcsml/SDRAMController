@@ -1,0 +1,8 @@
+{signal: [
+    {name: 'cnt_200us', wave: '3...3....|.',data: ['200us']},
+    {name: 'flag_200us', wave: '0...1....|.'},
+    {name: 'cnt_cmd', wave: '3....3333|3',data: ['0','1','2','3','4','9']},
+    {name: 'cmd_reg', wave: '5....55..|.'},
+    {name: 'sdram_addr', wave: '6........|.'},
+    {name: 'flag_init_end', wave: '0........|1'},
+]}

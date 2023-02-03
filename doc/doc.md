@@ -30,3 +30,61 @@
 | bit_flag    | internal | 检测串口数据信号（波特率计满产生）                           |
 | bit_cnt     | internal | 在一次发送中，已经发送的bit数，自增条件为bit_flag为高（数值0-8） |
 | tx          | output   | 串口数据发送端，当tx_flag拉高且bit_cnt==0时作为起始位，低电平有效之后发送8bit数据 |
+
+## SDRAM
+
+SDRAM引脚
+
+| 引脚       | 名称         | 描述                         |
+| ---------- | ------------ | ---------------------------- |
+| Clk        | Clock        | 时钟，所有信号依赖时钟上升沿 |
+| CKE        | Clock Enable | 内部时钟使能信号             |
+| CS         | Chip Select  | 片选信号，拉低有效           |
+| BA0 BA1    | Bank Address |                              |
+| A0-A11     | Address      | 地址线                       |
+| RAS CAS WE |              |                              |
+| UDQM LDQM  |              |                              |
+| DQ0-DQ15   |              |                              |
+| VDD/VSS    |              |                              |
+| VDDQ/VSSQ  |              |                              |
+
+SDRAM模式寄存器
+
+| BA1 | BA0 | A11 | A10 | A9      | A8  | A7  | A6-A4       | A3  | A2-A0        |
+| --- | --- | --- | --- | ------- | --- | --- | ----------- | --- | ------------ |
+| 0   | 0   | 0   | 0   | OP Code | 0   | 0   | CAS Latency | BT  | Burst Length | 
+
+
+### SDRAM初始化
+
+初始化过程
+![](doc/img/Pasted image 20230201110408.png)
+
+命令
+| Cmd   | CS  | RAS | CAS | WE  |
+| --------- | --- | --- | --- | --- |
+| Precharge | 0   | 0   | 1   | 0   |
+| A-Refresh | 0   | 0   | 0   | 1   |
+| NOP       | 0   | 1   | 1   | 1   |
+| Mode-Set  | 0   | 0   | 0   | 0   |
+
+时间间隔
+tRP: 20ns  1clk
+tRC: 63ns  4clks
+
+地址（配置模式寄存器）
+addr:  12'b0000_0011_0010
+
+![](https://svg.wavedrom.com/github/abcsml/SDRAMController/master/doc/wave/sdram_init_wave.json)
+
+| 信号          | 方向     | 描述                                                                                                   |
+| ------------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| cnt_200us     | internal | 200us计时器（假设1clk为20ns，200us为10000clks）                                                                        |
+| flag_200us    | internal | 为高表示200us已过                                                                                      |
+| cnt_cmd       | internal | 时钟计数器，200us后为0时，发送Precharge命令，为1时发送AUTO Refresh，5发送AUTO Refresh，9加载模式寄存器 |
+| cmd_reg       | output   | 输出当前指令                                                                                        |
+| sdram_addr    | output   | 输出当前地址                                                                                             |
+| flag_init_end | output   | 初始化结束标志信号                                                                                                       |
+
+### SDRAM引脚
+
