@@ -1,0 +1,10 @@
+{signal: [
+    {name: 'flag_aref_ask', wave: '1.0...........'},
+    {name: 'aref_en', wave: '01..........0.'},
+    {name: 'aref_cnt', wave: '3.3..........3',data:"750 0 1 2"},
+    {name: 'cmd_cnt', wave: '3.3333333333.3',data: "0 1 2 3 4 5 6 7 8 9 10 0"},
+    {name: 'sdram_cmd', wave: '5.5555555555.5',
+		data: ['','prec','aref','','','','aref']},
+    {name: 'sdram_addr', wave: '6.............',data:"12'b0100_0000_0000"},
+    {name: 'flag_aref_end', wave: '0..........1.0'},
+]}

@@ -1,8 +1,8 @@
 # SDRAM Controller
 
-## 串口收发模块
+# 串口收发模块
 
-### 串口接收模块
+## 串口接收模块
 ![](https://svg.wavedrom.com/github/abcsml/SDRAMController/master/doc/wave/uart_rx_wave.json)
 
 | 信号        | 方向     | 描述                                                         |
@@ -17,7 +17,7 @@
 | po_flag     | output   | 为高表示传输完毕                                             |
 
 
-### 串口发送模块
+## 串口发送模块
 ![](https://svg.wavedrom.com/github/abcsml/SDRAMController/master/doc/wave/uart_tx_wave.json)
 
 | 信号        | 方向     | 描述                                                         |
@@ -31,7 +31,7 @@
 | bit_cnt     | internal | 在一次发送中，已经发送的bit数，自增条件为bit_flag为高（数值0-8） |
 | tx          | output   | 串口数据发送端，当tx_flag拉高且bit_cnt==0时作为起始位，低电平有效之后发送8bit数据 |
 
-## SDRAM
+# SDRAM
 
 SDRAM引脚
 
@@ -40,13 +40,11 @@ SDRAM引脚
 | Clk        | Clock        | 时钟，所有信号依赖时钟上升沿 |
 | CKE        | Clock Enable | 内部时钟使能信号             |
 | CS         | Chip Select  | 片选信号，拉低有效           |
-| BA0 BA1    | Bank Address |                              |
-| A0-A11     | Address      | 地址线                       |
-| RAS CAS WE |              |                              |
-| UDQM LDQM  |              |                              |
-| DQ0-DQ15   |              |                              |
-| VDD/VSS    |              |                              |
-| VDDQ/VSSQ  |              |                              |
+| BA0 BA1    | Bank Address | Bank地址                     |
+| A0-A11     | Address      | 地址线，可以是行，也可以是列      |
+| RAS CAS WE |              | 用来发命令                   |
+| UDQM LDQM  | Data IO Mask | 数据掩码                     |
+| DQ0-DQ15   | Data IO      | 双向数据线                 |
 
 SDRAM模式寄存器
 
@@ -54,11 +52,10 @@ SDRAM模式寄存器
 | --- | --- | --- | --- | ------- | --- | --- | ----------- | --- | ------------ |
 | 0   | 0   | 0   | 0   | OP Code | 0   | 0   | CAS Latency | BT  | Burst Length | 
 
-
-### SDRAM初始化
+## SDRAM初始化
 
 初始化过程
-![](doc/img/Pasted image 20230201110408.png)
+![](img/Pasted%20image%2020230201110408.png)
 
 命令
 | Cmd   | CS  | RAS | CAS | WE  |
@@ -86,5 +83,21 @@ addr:  12'b0000_0011_0010
 | sdram_addr    | output   | 输出当前地址                                                                                             |
 | flag_init_end | output   | 初始化结束标志信号                                                                                                       |
 
-### SDRAM引脚
+## SDRAM仲裁
 
+SDRAM仲裁状态机
+![](img/shot2023-02-05%20105002.png)
+
+## SDRAM刷新
+
+![](https://svg.wavedrom.com/github/abcsml/SDRAMController/master/doc/wave/sdram_aref_wave.json)
+
+| 信号          | 方向     | 描述                                                                     |
+| ------------- | -------- | ------------------------------------------------------------------------ |
+| flag_aref_ask | output   | 请求刷新信号，aref_cnt计数满后拉高                                       |
+| aref_en       | input    | 允许刷新信号，刷新结束后应立刻拉低                                    |
+| aref_cnt      | internal | 计时器，每周期自加1，加满后表示需要刷新，en高时置零（4096refreshs/64ms） |
+| cmd_cnt       | internal | 周期计数器，en高时自加，低时归零，最高为10                               |
+| sdram_cmd     | output   | 根据cmd_cnt输出指令，和init过程一样                                            |
+| sdram_addr    | output   | 恒为12'b0100_0000_0000                                                   |
+| flag_aref_end | output   | 表示此次刷新结束，当cmd_cnt为10时拉高 |
