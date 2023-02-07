@@ -2,13 +2,13 @@ module sdram_aref (
 	input					sclk,
 	input					srst_n,
 	input					aref_en,
-	output		[ 3:0]		sdram_cmd,
+	output	reg	[ 3:0]		sdram_cmd,
 	output		[11:0]		sdram_addr,
 	output					flag_aref_ask,
 	output					flag_aref_end
 );
 
-localparam	AREF_CNT_END	=	750;
+localparam	AREF_CNT_END	=	749;
 localparam	CMD_CNT_END		=	10;
 localparam	NOP				=	4'b0111;
 localparam	PREC			=	4'b0010;
