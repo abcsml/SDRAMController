@@ -101,3 +101,43 @@ SDRAM仲裁状态机
 | sdram_cmd     | output   | 根据cmd_cnt输出指令，和init过程一样                                            |
 | sdram_addr    | output   | 恒为12'b0100_0000_0000                                                   |
 | flag_aref_end | output   | 表示此次刷新结束，当cmd_cnt为10时拉高 |
+
+
+## SDRAM 写
+
+![](https://svg.wavedrom.com/github/abcsml/SDRAMController/master/doc/wave/sdram_write_wave1.json)
+
+| 信号         | 方向     | 描述                                                         |
+| ------------ | -------- | ------------------------------------------------------------ |
+| wr_trig      | input    | 表示有数据来了，准备写入SDRAM                                |
+| flag_wring   | internal | 表示有正在处理的写任务，遇见wr_trig拉高，遇见flag_wr_end拉低 |
+| flag_wr_ask  | output   | 写请求，有写任务时拉高，仲裁允许后(wr_en为高)拉低，和S_ASK状态同步   |
+| wr_en        | input    | 写使能，由仲裁器发出，表示允许写模块运作，当有更高优先级任务时(如AREF)会拉低，此时应该等待当前burst完成后，立刻退出WR状态 |
+| state        | internal | 状态机，5种状态，S_ACT，S_PRE固定两个周期<br>1、IDLE遇到trig变为ASK<br>2、ASK遇到使能信号变为ACT<br>3、ACT遇到act_end变为WR<br>4、WR遇到换行、使能退出时变为PRE<br>5、PRE根据三种不同情况分别跳转到ACT，ASK，IDLE，可以根据en和flag_wring信号判断 |
+| flag_act_end | internal | S_ACT结束信号                       |
+| flag_pre_end | internal | S_PRE结束信号                  |
+| wr_row       | internal | 0:表示当前为第一行，1：第二行(最高两行)，trig时归零，wr遇到换行结束时变1 |
+| burst_cnt    | internal | 4次burst，记录当前为第几次  |
+| flag_wr_end  | output   | 拉高表示此次任务结束      |
+
+![](https://svg.wavedrom.com/github/abcsml/SDRAMController/master/doc/wave/sdram_write_wave2.json)
+
+| 信号               | 方向     | 描述                                                          |
+| ------------------ | -------- | ------------------------------------------------------------- |
+| burst_cnt[1:0]     | internal | 同上                                                          |
+| sdram_cmd[3:0]     | output   | 写模块输出命令                                                |
+| sdram_addr[11:0]   | output   | 输出地址，行：0-11，列：0-8，可由burst_cnt和rem_burst_len算出 |
+| sdram_bank[1:0]    | output   |             |
+| sdram_data[15:0]   | output   |                    |
+| rem_burst_len[7:0] | internal | 剩余burst次数(WR状态，burst_cnt为0时自减)                     |
+
+其他信号
+
+| 信号       | 方向   | 描述                                                  |
+| ---------- | ------ | ----------------------------------------------------- |
+| wr_data    | input  | 当前要写入SDRAM的数据，配合wr_data_en使用             |
+| wr_data_en | output | 表示当前data正在被写入，提醒在下个周期更换wr_data数据 |
+| wr_addr[20:0]  | input  |                                                       |
+| wr_len[7:0]  | input  | 此次写入SDRAM数据burst次数                  |
+
+- [info] burst超出会自动跳转到下一行
