@@ -20,21 +20,35 @@ module sdram_top (
 localparam	S_IDLE	=	3'd0;
 localparam	S_ARBIT	=	3'd1;
 localparam	S_AREF	=	3'd2;
+localparam  S_WRITE =   3'd3;
 
 reg		[ 1:0]			state;
 
 reg		[ 3:0]			sdram_cmd;
-// init SDRAM
+// SDRAM init
 wire					flag_init_end;
 wire	[ 3:0]			init_cmd;
 wire	[11:0]			init_addr;
-// auto refresh SDRAM
+// SDRAM auto refresh
 wire					aref_en;
 wire					flag_aref_ask;
 wire					flag_aref_end;
 wire	[ 3:0]			aref_cmd;
 wire	[11:0]			aref_addr;
+// SDRAM write
+wire                    wr_en;
+wire 	                flag_wr_ask;
+wire 	                flag_wr_end;
 
+wire                    wr_trig;
+wire    [ 7:0]          wr_len;
+wire    [15:0]          wr_data;
+wire    [20:0]          wr_addr;
+wire 	                wr_data_en;
+wire    [3:0]	        write_cmd;
+wire    [11:0]	        write_addr;
+wire    [1:0]	        write_bank;
+wire    [15:0]	        write_data;
 
 /***************************************
 * Main Code
@@ -44,15 +58,24 @@ assign	sdram_cke	=	1'b1;
 assign	sdram_dqm	=	2'b00;		// 令DQ无效
 
 assign	{sdram_cs_n, sdram_ras_n, sdram_cas_n, sdram_we_n}	=	sdram_cmd;
+assign  sdram_dq    =   state == S_WRITE ? write_data : 'd0;
 
 always @(posedge sclk or negedge srst_n) begin
 	if (!srst_n)
 		state <= S_IDLE;
 	else case (state)
-		S_IDLE: state <= flag_init_end ? S_ARBIT : S_IDLE;
-		S_ARBIT: state <= flag_aref_ask ? S_AREF : S_ARBIT;
-		S_AREF: state <= flag_aref_end ? S_ARBIT : S_AREF;
-		default: state <= S_IDLE;
+		S_IDLE:     state <= flag_init_end ? S_ARBIT : S_IDLE;
+		S_ARBIT:    begin
+            if (flag_aref_ask)
+                state <= S_AREF;
+            else if (flag_wr_ask)
+                state <= S_WRITE;
+            else
+                state <= S_ARBIT;
+        end
+		S_AREF:     state <= flag_aref_end ? S_ARBIT : S_AREF;
+        S_WRITE:    state <= flag_wr_end ? S_ARBIT : S_WRITE;
+		default:    state <= S_IDLE;
 	endcase
 end
 
@@ -66,6 +89,10 @@ always @(*) begin
 			sdram_cmd 	=	aref_cmd;
 			sdram_addr	=	aref_addr;
 		end
+        S_WRITE: begin
+            sdram_cmd   =   write_cmd;
+            sdram_addr  =   write_addr;
+        end
 		default: begin
 			sdram_cmd 	=	4'b0111;
 			sdram_addr	=	'd0;
@@ -74,6 +101,7 @@ always @(*) begin
 end
 
 assign	aref_en		=	state == S_AREF;
+assign  wr_en       =   flag_aref_ask ? 1'b0 : (state == S_WRITE);
 
 sdram_init	sdram_init_inst(
 	.sclk				(sclk			),
@@ -91,6 +119,23 @@ sdram_aref sdram_aref_inst(
 	.sdram_addr    		(aref_addr    	),
 	.flag_aref_ask 		(flag_aref_ask 	),
 	.flag_aref_end 		(flag_aref_end 	)
+);
+
+sdram_write sdram_write_inst(
+	.sclk        		(sclk        	),
+	.srst_n      		(srst_n      	),
+	.wr_en       		(wr_en       	),
+	.flag_wr_ask 		(flag_wr_ask 	),
+	.flag_wr_end 		(flag_wr_end 	),
+	.wr_trig     		(wr_trig     	),
+	.wr_len      		(wr_len      	),
+	.wr_data     		(wr_data     	),
+	.wr_addr     		(wr_addr     	),
+	.wr_data_en  		(wr_data_en  	),
+	.sdram_cmd   		(write_cmd   	),
+	.sdram_addr  		(write_addr  	),
+	.sdram_bank  		(write_bank  	),
+	.sdram_data  		(write_data  	)
 );
 
 endmodule
