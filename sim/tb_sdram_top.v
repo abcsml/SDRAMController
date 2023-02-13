@@ -15,16 +15,39 @@ wire				sdram_ras_n;
 wire				sdram_cas_n;
 wire				sdram_we_n;
 wire [ 1:0]			sdram_dqm;
+wire [15:0]			sdram_dq;
+
+reg                 wr_trig;
+reg  [ 7:0]         wr_len;
+reg  [15:0]         wr_data;
+reg  [20:0]         wr_addr;
+wire               	wr_data_en;
 
 initial begin
 	sclk = 1;
-	srst_n <= 0;
+	srst_n = 0;
 	#100
-	srst_n <= 1;
+	srst_n = 1;
+	wr_trig	= 1;
+	wr_len = 0;
+	wr_data = 0;
+	wr_addr = 0;
+	#200000
+	write();
 end
 
 always	#10		sclk = ~ sclk;
 
+task write();
+	begin
+		wr_trig	<=	1'b1;
+		wr_len	<=	'd1000;
+		wr_data	<=	'hdd;
+		wr_addr	<=	'b1000_111_111_111;
+		#20
+		wr_trig	<=	1'b0;
+	end
+endtask
 
 sdram_top sdram_top_inst (
 	.sclk        		(sclk        		),
@@ -38,7 +61,13 @@ sdram_top sdram_top_inst (
 	.sdram_cas_n 		(sdram_cas_n 		),
 	.sdram_we_n  		(sdram_we_n  		),
 	.sdram_dqm   		(sdram_dqm   		),
-	.sdram_dq    		(sdram_dq    		)
+	.sdram_dq    		(sdram_dq    		),
+
+	.wr_trig			(wr_trig			),
+	.wr_len				(wr_len				),
+	.wr_data			(wr_data			),
+	.wr_addr			(wr_addr			),
+	.wr_data_en			(wr_data_en			)
 );
 
 

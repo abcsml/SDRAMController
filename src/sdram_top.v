@@ -11,7 +11,13 @@ module sdram_top (
 	output	wire			sdram_cas_n,
 	output	wire			sdram_we_n,
 	output	wire	[ 1:0]	sdram_dqm,
-	inout			[15:0]	sdram_dq
+	inout			[15:0]	sdram_dq,
+    // Test
+    input   wire            wr_trig,
+    input   wire    [ 7:0]  wr_len,
+    input   wire    [15:0]  wr_data,
+    input   wire    [20:0]  wr_addr,
+    output 	wire            wr_data_en
 );
 /****************************************
 * Parameter and Internal Signals
