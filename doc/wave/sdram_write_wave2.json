@@ -9,7 +9,7 @@
         data:"0 1 2 3 0 1 2 3 0 1 2 3 0 0 1 2 3"},
     {name: 'sdram_cmd[3:0]', 	wave: 'x3x3xxx3xxx3xxx3x|3xxxx3x',
         data: ['ACT','WR','WR','WR','WR','WR','PRE']},
-    {name: 'sdram_addr[11:0]', 	wave: 'x3.3...3...3...3x|3...xxx',
+    {name: 'sdram_addr[11:0]', 	wave: 'x3.33...3...3...3x|3...xx',
         data: "row"},
     {name: 'sdram_bank[1:0]', 	wave: '4................|.......',
         data: "0 0 0 0 0"},
