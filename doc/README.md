@@ -66,6 +66,7 @@ SDRAM模式寄存器
 | Mode-Set  | 0   | 0   | 0   | 0   |
 | Active    | 0   | 0   | 1   | 1   |
 | Write     | 0   | 1   | 0   | 0   |
+| Read      | 0   | 1   | 0   | 1   |
 
 时间间隔
 tRP: 20ns  1clk
@@ -145,4 +146,7 @@ SDRAM仲裁状态机
 | row_addr[11:0]| internal | 行地址                                                |
 | col_addr[8:0] | internal | 列地址                                                |
 
-- [info] burst超出会自动跳转到下一行
+
+**读模块逻辑相同，不再写文档**
+
+只是换个名字，加一个计数器（burst_cnt_t）用来计算2个周期延迟

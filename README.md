@@ -5,4 +5,6 @@
 - ModelSim 10.5
 
 ## 文档
-[doc](doc/README.md)
+[文档（波形，信号，状态机说明等）](doc/README.md)
+
+## TODO
