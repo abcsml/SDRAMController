@@ -36,7 +36,7 @@ reg                     s_wr_end;
 reg [ 4:0]              state;
 reg                     s_wr_row;
 reg [ 1:0]              burst_cnt;
-reg [ 1:0]              burst_cnt_t;
+// reg [ 1:0]              burst_cnt_t;
 reg [ 7:0]              rem_burst_len;
 
 reg [11:0]              row_addr;
@@ -123,9 +123,9 @@ always @(posedge sclk or negedge srst_n) begin
         burst_cnt   <=  'b0;
 end
 
-always @(posedge sclk) begin
-    burst_cnt_t     <=  burst_cnt;
-end
+// always @(posedge sclk) begin
+//     burst_cnt_t     <=  burst_cnt;
+// end
 
 always @(posedge sclk or negedge srst_n) begin
     if (!srst_n)
@@ -174,7 +174,7 @@ always @(posedge sclk or negedge srst_n) begin
         col_addr    <=  'b0;
     else if (wr_trig)
         col_addr    <=  wr_addr[8:0];
-    else if (state == S_WR && burst_cnt_t == 'd0 && burst_cnt == 'd1)
+    else if (state == S_WR && burst_cnt == 'd1)
         {s_wr_row, col_addr}    <=  {1'b0, col_addr} + 'd4;
 end
 
