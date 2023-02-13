@@ -17,12 +17,12 @@ module sdram_top (
 * Parameter and Internal Signals
 ****************************************/
 // state
-localparam	S_IDLE	=	3'd0;
-localparam	S_ARBIT	=	3'd1;
-localparam	S_AREF	=	3'd2;
-localparam  S_WRITE =   3'd3;
+localparam	S_IDLE	=	4'b0001;
+localparam	S_ARBIT	=	4'b0010;
+localparam	S_AREF	=	4'b0100;
+localparam  S_WRITE =   4'b1000;
 
-reg		[ 1:0]			state;
+reg		[ 3:0]			state;
 
 reg		[ 3:0]			sdram_cmd;
 // SDRAM init
@@ -40,11 +40,6 @@ wire                    wr_en;
 wire 	                flag_wr_ask;
 wire 	                flag_wr_end;
 
-wire                    wr_trig;
-wire    [ 7:0]          wr_len;
-wire    [15:0]          wr_data;
-wire    [20:0]          wr_addr;
-wire 	                wr_data_en;
 wire    [3:0]	        write_cmd;
 wire    [11:0]	        write_addr;
 wire    [1:0]	        write_bank;
@@ -58,7 +53,8 @@ assign	sdram_cke	=	1'b1;
 assign	sdram_dqm	=	2'b00;		// 令DQ无效
 
 assign	{sdram_cs_n, sdram_ras_n, sdram_cas_n, sdram_we_n}	=	sdram_cmd;
-assign  sdram_dq    =   state == S_WRITE ? write_data : 'd0;
+assign  sdram_dq    =   (state == S_WRITE) ? write_data : {24{1'bz}};
+assign  sdram_bank  =   2'd0;
 
 always @(posedge sclk or negedge srst_n) begin
 	if (!srst_n)
@@ -75,7 +71,7 @@ always @(posedge sclk or negedge srst_n) begin
         end
 		S_AREF:     state <= flag_aref_end ? S_ARBIT : S_AREF;
         S_WRITE:    state <= flag_wr_end ? S_ARBIT : S_WRITE;
-		default:    state <= S_IDLE;
+		default:    state <= state;
 	endcase
 end
 

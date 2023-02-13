@@ -22,19 +22,19 @@ localparam      CMD_ACT =   4'b0011;
 localparam      CMD_WR  =   4'b0100;
 localparam      CMD_PRE =   4'b0010;
 
-localparam      S_IDLE  =   3'd0;
-localparam      S_ASK   =   3'd1;
-localparam      S_ACT   =   3'd2;
-localparam      S_WR    =   3'd3;
-localparam      S_PRE   =   3'd4;
+localparam      S_IDLE  =   5'b00001;
+localparam      S_ASK   =   5'b00010;
+localparam      S_ACT   =   5'b00100;
+localparam      S_WR    =   5'b01000;
+localparam      S_PRE   =   5'b10000;
 
 reg                     flag_wring;
 reg                     s_act_end;
 reg                     s_pre_end;
 reg                     s_wr_end;
 
-reg [ 2:0]              state;
-reg                     wr_row;
+reg [ 4:0]              state;
+reg                     s_wr_row;
 reg [ 1:0]              burst_cnt;
 reg [ 1:0]              burst_cnt_t;
 reg [ 7:0]              rem_burst_len;
@@ -51,12 +51,15 @@ always @(posedge sclk or negedge srst_n) begin
         S_ASK:  state   <=  wr_en ? S_ACT : S_ASK;
         S_ACT:  state   <=  s_act_end ? S_WR : S_ACT;
         S_WR:   state   <=  s_wr_end ? S_PRE : S_WR;
-        S_PRE:  if (s_pre_end && !flag_wring)
-                    state   <=  S_IDLE;
-                else if (s_pre_end && wr_en)
-                    state   <=  S_ACT;
-                else if (s_pre_end && !wr_en)
-                    state   <=  S_ASK;
+        S_PRE:  begin
+            if (s_pre_end && !flag_wring)
+                state   <=  S_IDLE;
+            else if (s_pre_end && wr_en)
+                state   <=  S_ACT;
+            else if (s_pre_end && !wr_en)
+                state   <=  S_ASK;
+        end
+        default:    state   <=  state;
     endcase
 end
 
@@ -92,7 +95,7 @@ always @(posedge sclk or negedge srst_n) begin
     if (!srst_n)
         s_wr_end    <=  1'b0;
     else if (state == S_WR && burst_cnt == 'd3 &&
-        (wr_row == 'b1 || wr_en == 'b0 || flag_wring == 'b0))
+        (s_wr_row == 'b1 || wr_en == 'b0 || flag_wring == 'b0))
         s_wr_end    <=  1'b1;
     else
         s_wr_end    <=  1'b0;
@@ -104,13 +107,11 @@ assign  flag_wr_end =   (!flag_wring & s_pre_end) | (!wr_en & s_pre_end);
 
 always @(posedge sclk or negedge srst_n) begin
     if (!srst_n)
-        wr_row  <=  1'b0;
+        s_wr_row  <=  1'b0;
     else if (wr_trig)
-        wr_row  <=  1'b0;
-    else if (col_addr == 'd509)
-        wr_row  <=  1'b1;
-    else
-        wr_row  <=  1'b0;
+        s_wr_row  <=  1'b0;
+    else if (state != S_WR)
+        s_wr_row  <=  1'b0;
 end
 
 always @(posedge sclk or negedge srst_n) begin
@@ -137,7 +138,8 @@ end
 
 // Other
 assign  wr_data_en  =   (state == S_WR) && (burst_cnt == 'b0);
-assign  sdram_addr  =   state == S_ACT ? row_addr : col_addr;
+assign  sdram_addr  =   (state == S_PRE) ? 12'b0100_0000_0000 :
+                        (state == S_ACT) ? row_addr : col_addr;
 assign  sdram_data  =   wr_data;
 
 always @(posedge sclk or negedge srst_n) begin
@@ -163,7 +165,7 @@ always @(posedge sclk or negedge srst_n) begin
         row_addr    <=  'b0;
     else if (wr_trig)
         row_addr    <=  wr_addr[20:9];
-    else if (wr_row && s_wr_end)
+    else if (s_wr_row && s_wr_end)
         row_addr    <=  row_addr + 1'b1;
 end
 
@@ -172,8 +174,8 @@ always @(posedge sclk or negedge srst_n) begin
         col_addr    <=  'b0;
     else if (wr_trig)
         col_addr    <=  wr_addr[8:0];
-    else if (state == S_WR && burst_cnt == 'd0 && !s_wr_end)
-        col_addr    <=  col_addr + 'd4;
+    else if (state == S_WR && burst_cnt_t == 'd0 && burst_cnt == 'd1)
+        {s_wr_row, col_addr}    <=  {1'b0, col_addr} + 'd4;
 end
 
 endmodule //sdram_write
