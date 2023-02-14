@@ -17,9 +17,11 @@ module sdram_read(
     input       [15:0]      sdram_data
 );
 
+parameter       CASL    =   3'b011;   
+
 localparam      CMD_NOP =   4'b0111;
 localparam      CMD_ACT =   4'b0011;
-localparam      CMD_RD  =   4'b0100;
+localparam      CMD_RD  =   4'b0101;
 localparam      CMD_PRE =   4'b0010;
 
 localparam      S_IDLE  =   5'b00001;
@@ -36,7 +38,7 @@ reg                     s_rd_end;
 reg [ 4:0]              state;
 reg                     s_rd_row;
 reg [ 1:0]              burst_cnt;
-reg [ 1:0]              burst_cnt_t;
+reg [ 2:0]              burst_cnt_t;
 reg [ 7:0]              rem_burst_len;
 
 reg [11:0]              row_addr;
@@ -126,8 +128,8 @@ end
 always @(posedge sclk) begin
     if (!srst_n)
         burst_cnt_t <=  'd0;
-    else if (burst_cnt == 'd3)
-        burst_cnt_t <=  'd3;
+    else if (burst_cnt == CASL)
+        burst_cnt_t <=  'd4;
     else if (burst_cnt_t != 'd0)
         burst_cnt_t <=  burst_cnt_t - 'd1;
 end

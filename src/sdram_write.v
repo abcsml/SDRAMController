@@ -10,7 +10,7 @@ module sdram_write(
     input       [ 7:0]      wr_len,
     input       [15:0]      wr_data,
     input       [20:0]      wr_addr,        // 必须对齐
-    output                  wr_data_en,
+    output  reg             wr_data_en,
     output  reg [ 3:0]      sdram_cmd,
     output      [11:0]      sdram_addr,
     output  reg [ 1:0]      sdram_bank,
@@ -137,10 +137,18 @@ always @(posedge sclk or negedge srst_n) begin
 end
 
 // Other
-assign  wr_data_en  =   (state == S_WR) && (burst_cnt == 'b0);
 assign  sdram_addr  =   (state == S_PRE) ? 12'b0100_0000_0000 :
                         (state == S_ACT) ? row_addr : col_addr;
 assign  sdram_data  =   wr_data;
+
+always @(posedge sclk or negedge srst_n) begin
+    if (!srst_n)
+        wr_data_en  <=  1'b0;
+    else if (state == S_WR && !s_wr_end)
+        wr_data_en  <=  1'b1;
+    else
+        wr_data_en  <=  1'b0;
+end
 
 always @(posedge sclk or negedge srst_n) begin
     if (!srst_n)
