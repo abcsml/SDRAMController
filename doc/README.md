@@ -149,3 +149,18 @@ SDRAM仲裁状态机
 **读模块逻辑相同，不再写文档**
 
 只是换个名字，加一个计数器（burst_cnt_t）用来计算2个周期延迟
+
+
+## 命令解析模块
+
+![](https://svg.wavedrom.com/github/abcsml/SDRAMController/master/doc/wave/cmd_decode_wave.json)
+
+| 信号        | 方向     | 描述                                                    |
+| ----------- | -------- | ------------------------------------------------------- |
+| uart_flag   | input    | 表示收到数据(po_flag，为高时数据有效)                   |
+| uart_data   | input    | 串口接收到的数据，h55表示写，后面跟4个写数据；haa表示读 |
+| rec_num     | internal | 写数据计数                                              |
+| cmd_reg     | internal | 0:空闲，1:处于写状态，2:处于读状态                      |
+| wr_trig     | output   | 写触发                                                  |
+| rd_trig     | output   | 读触发                                                  |
+| wfifo_wr_en | output   | 写fifo使能                                              |
