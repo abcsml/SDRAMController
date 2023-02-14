@@ -29,7 +29,7 @@ localparam	S_AREF	=	5'b00100;
 localparam  S_WRITE =   5'b01000;
 localparam  S_READ 	=   5'b10000;
 
-reg		[ 3:0]			state;
+reg		[ 4:0]			state;
 
 reg		[ 3:0]			sdram_cmd;
 // SDRAM init
@@ -70,7 +70,7 @@ assign	sdram_dqm	=	2'b00;		// ?
 
 assign	{sdram_cs_n, sdram_ras_n, sdram_cas_n, sdram_we_n}	=	sdram_cmd;
 assign  sdram_dq    =   (state == S_WRITE) ? write_data : {16{1'bz}};
-assign	read_data	=	(state == S_READ) ? sdram_dq : {16{1'bz}};
+assign	read_data	=	(state == S_READ) ? sdram_dq : 'd0;
 assign  sdram_bank  =   2'd0;
 
 always @(posedge sclk or negedge srst_n) begin
@@ -159,7 +159,7 @@ sdram_write sdram_write_inst(
 	.sdram_data  		(write_data  	)
 );
 
-sdram_write sdram_read_inst(
+sdram_read sdram_read_inst(
 	.sclk        		(sclk        	),
 	.srst_n      		(srst_n      	),
 	.rd_en       		(rd_en       	),
