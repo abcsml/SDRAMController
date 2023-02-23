@@ -3,9 +3,10 @@
 module uart_tx(
 	input				clk,
 	input				rstn,
-	output	reg			tx,
 	input				tx_trig,
-	input	[7:0]		tx_data
+	input	[7:0]		tx_data,
+	output	reg			tx,
+	output	reg			tx_busy
 );
 
 localparam	FPGA_FREQ	=	50_000_000;
@@ -50,7 +51,7 @@ always @(posedge clk or negedge rstn) begin
 		baud_cnt <= 'b0;
 	else if (baud_cnt == BAUD_END)
 		baud_cnt <= 'b0;
-	else if (tx_flag == 1'b1)
+	else if (tx_busy == 1'b1)
 		baud_cnt <= baud_cnt + 1'b1;
 end
 
@@ -66,7 +67,7 @@ end
 always @(posedge clk or negedge rstn) begin
 	if (rstn == 1'b0)
 		bit_cnt <= 'b0;
-	else if (bit_flag == 1'b1 && bit_cnt == 'd8)
+	else if (bit_flag == 1'b1 && bit_cnt == (BIT_END + 1))
 		bit_cnt <= 'b0;
 	else if (bit_flag == 1'b1)
 		bit_cnt <= bit_cnt + 1'b1;
@@ -81,6 +82,15 @@ always @(posedge clk or negedge rstn) begin
 		tx <= tx_data_reg[0];
 	else
 		tx <= 1'b1;
+end
+
+always @(posedge clk or negedge rstn) begin
+	if (rstn == 1'b0)
+		tx_busy <= 1'b0;
+	else if (tx_trig && !tx_busy)
+		tx_busy <= 1'b1;
+	else if (bit_cnt == (BIT_END + 1) && baud_cnt == BAUD_END)
+		tx_busy <= 1'b0;
 end
 
 endmodule

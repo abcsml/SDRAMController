@@ -7,6 +7,7 @@ reg					rstn;
 reg					tx_trig;
 
 wire				tx;
+wire				tx_busy;
 reg		[7:0]		tx_data;
 
 wire				po_flag;
@@ -62,7 +63,8 @@ uart_tx		uart_tx_inst(
 	.rstn				(rstn			),
 	.tx					(tx				),
 	.tx_trig			(tx_trig		),
-	.tx_data			(tx_data		)
+	.tx_data			(tx_data		),
+	.tx_busy			(tx_busy		)
 );
 
 endmodule
