@@ -30,6 +30,7 @@
 | bit_flag    | internal | 检测串口数据信号（波特率计满产生）                           |
 | bit_cnt     | internal | 在一次发送中，已经发送的bit数，自增条件为bit_flag为高（数值0-8） |
 | tx          | output   | 串口数据发送端，当tx_flag拉高且bit_cnt==0时作为起始位，低电平有效之后发送8bit数据 |
+| tx_busy     | output   | 为高表示串口正忙，无法接收新trig |
 
 # SDRAM
 
