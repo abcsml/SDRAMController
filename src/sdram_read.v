@@ -9,7 +9,7 @@ module sdram_read(
     input                   rd_trig,
     input       [ 7:0]      rd_len,
     input       [20:0]      rd_addr,
-    output      [15:0]      rd_data,
+    output  reg [15:0]      rd_data,
     output                  rd_data_en,
     output  reg [ 3:0]      sdram_cmd,
     output      [11:0]      sdram_addr,
@@ -147,7 +147,15 @@ end
 assign  sdram_addr  =   (state == S_PRE) ? 12'b0100_0000_0000 :
                         (state == S_ACT) ? row_addr : col_addr;
 assign  rd_data_en  =   burst_cnt_t != 'd0;
-assign  rd_data     =   sdram_data;
+// assign  rd_data     =   sdram_data;
+
+always @(posedge sclk or negedge srst_n) begin
+    if (!srst_n)
+        rd_data <= 'd0;
+    else
+        rd_data <= sdram_data;
+end
+
 
 always @(posedge sclk or negedge srst_n) begin
     if (!srst_n)

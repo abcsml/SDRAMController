@@ -35,7 +35,7 @@ always @(posedge sclk or negedge srst_n) begin
     else if (cmd_reg == S_NOP && uart_flag && uart_data == CMD_WRITE)
         cmd_reg <= S_WRITE;
     else if (cmd_reg == S_NOP && uart_flag && uart_data == CMD_READ)
-        cmd_reg <= S_READ;
+        cmd_reg <= S_NOP;
     else if (cmd_reg == S_WRITE && uart_flag && rec_num == 'd3)
         cmd_reg <= S_NOP;
     else if (cmd_reg == S_READ && uart_flag)
