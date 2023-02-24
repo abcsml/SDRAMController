@@ -25,7 +25,7 @@
 | tx_trig     | input    | 为高表示tx_data数据有效                                      |
 | tx_data     | input    | 串口要发送的数据                                             |
 | tx_data_reg | internal | 缓存tx_data数据的寄存器                                      |
-| tx_flag     | internal | 为高表示串口处于发送状态                                     |
+| tx_flag     | abandon  | 为高表示串口处于发送状态                                     |
 | baud_cnt    | internal | 波特率计数器，和接收模块相同                                 |
 | bit_flag    | internal | 检测串口数据信号（波特率计满产生）                           |
 | bit_cnt     | internal | 在一次发送中，已经发送的bit数，自增条件为bit_flag为高（数值0-8） |

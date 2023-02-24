@@ -26,7 +26,7 @@ initial begin
 	tx_byte();
 end
 
-always	#5		clk		=		~clk;
+always	#10		clk		=		~clk;
 
 initial $readmemh("./tx_data.txt", mem_a);
 
@@ -43,10 +43,10 @@ task		tx_bit(
 	begin
 		tx_data <= data;
 		tx_trig <= 1'b1;
-		#10;
+		#20;
 		tx_trig <= 1'b0;
 		tx_data <= 'b0;
-		#8000;
+		#16000;
 	end
 endtask
 
